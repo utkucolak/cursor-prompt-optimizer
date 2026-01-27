@@ -1,0 +1,61 @@
+{
+  "name": "cursor-token-optimizer",
+  "displayName": "Cursor Token Optimizer",
+  "description": "Optimizes prompts to reduce token costs using local LLM models",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "cursor",
+    "prompt",
+    "optimization",
+    "token",
+    "ollama",
+    "llm"
+  ],
+  "activationEvents": [
+    "onCommand:cursor-token-optimizer.optimizePrompt"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "cursor-token-optimizer.optimizePrompt",
+        "title": "Optimize Prompt"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "cursor-token-optimizer.optimizePrompt",
+        "key": "ctrl+shift+o",
+        "mac": "cmd+shift+o"
+      }
+    ],
+    "configuration": {
+      "title": "Cursor Token Optimizer",
+      "properties": {
+        "cursorTokenOptimizer.model": {
+          "type": "string",
+          "default": "llama3.2",
+          "description": "Ollama model to use for prompt optimization. Examples: llama3.2, mistral, phi3, gemma2:2b",
+          "scope": "application"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.74.0",
+    "@types/node": "16.x",
+    "typescript": "^4.9.4"
+  },
+  "dependencies": {}
+}

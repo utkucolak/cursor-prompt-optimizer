@@ -1,0 +1,57 @@
+=== Test Prompts for Cursor Token Optimizer ===
+
+Test 1: Simple English Prompt (should be optimized and structured)
+---
+
+Please, I would like you to help me create a function that calculates the total price of items in a shopping cart. It would be really great if you could make sure it handles discounts properly. Thank you so much!
+
+[CONTEXT]: Shopping cart price calculation
+[TASK]: Develop a function to calculate total price with discounts
+[CONSTRAINTS]: None
+
+Create a Python function that takes a list of items in the shopping cart as input, where each item is a dictionary containing 'price' and 'discount' fields. The function should return the total price after applying all applicable discounts.
+
+Test 2: Non-English Prompt (should be translated to English)
+---
+Bonjour, j'aimerais que vous créiez une fonction qui calcule la somme totale des articles dans un panier d'achat. Il serait vraiment bien si vous pouviez vous assurer qu'elle gère correctement les remises. Merci beaucoup!
+
+[CONTEXT]: French language, e-commerce scenario
+[TASK]: Implement a function to calculate the total sum of items in a shopping cart, ensuring correct handling of discounts.
+[CONSTRAINTS]: None specified
+
+"Create a function that calculates the total cost of items in a shopping cart, including discount handling."
+Test 3: Already Structured Prompt (should still be optimized)
+---
+[CONTEXT]
+We have a shopping cart system
+[TASK]
+Calculate total price with discounts
+[CONSTRAINTS]
+Must handle edge cases
+
+
+Test 4: Verbose Prompt with Redundancy
+---
+I would like to request that you please help me in order to create a function that is able to calculate the total price of items that are in a shopping cart. It is important to note that this function should be able to handle discounts due to the fact that we have various promotional offers. At this point in time, we need this functionality for the purpose of improving our checkout process.
+
+[CONTEXT]: Shopping Cart Price Calculator Function
+[TASK]: Develop a function to calculate total price of items in a shopping cart with discounts.
+[CONSTRAINTS]: Handle promotional offers and apply discounts.
+
+"Create a function that calculates the total price of items in a shopping cart, considering discounts from various promotional offers."
+Test 5: Mixed Language Prompt
+---
+Hola, I want to create una función that calculates el precio total of items en el carrito. Please make sure it handles descuentos properly. Gracias!
+
+[CONTEXT]
+E-commerce price calculation function
+
+[TASK]
+Create a Python function that calculates the total price of items in a cart, including discounts.
+
+[CONSTRAINTS]
+- Handle discounts properly
+- No additional imports or libraries required
+
+Optimized Prompt:
+"Write a Python function to calculate the total price of items in a cart, considering discounts."
