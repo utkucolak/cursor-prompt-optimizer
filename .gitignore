@@ -1,10 +1,6 @@
 # Dependencies
 node_modules/
 
-# Build output (uncomment if you want to exclude compiled files from git)
-# out/
-# dist/
-
 # VS Code
 .vscode-test/
 .vscode/
