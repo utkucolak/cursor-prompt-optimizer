@@ -1,10 +1,11 @@
 # Dependencies
 node_modules/
+extension_installers/
 
 # VS Code
 .vscode-test/
 .vscode/
-
+*.vsix
 # OS
 .DS_Store
 Thumbs.db
