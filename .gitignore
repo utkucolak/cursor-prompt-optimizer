@@ -4,7 +4,6 @@ node_modules/
 # VS Code
 .vscode-test/
 .vscode/
-*.vsix
 
 # OS
 .DS_Store
