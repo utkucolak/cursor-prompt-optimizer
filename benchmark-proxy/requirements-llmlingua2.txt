@@ -1,0 +1,19 @@
+# Dependencies for the LLMLingua-2 benchmark proxy (llmlingua2_proxy.py).
+#
+# llmlingua >=0.2.2 ships both the original LLMLingua (perplexity-based) and
+# LLMLingua-2 (token-classification, XLM-RoBERTa backbone) under the same
+# `PromptCompressor` API. We only use the LLMLingua-2 path
+# (use_llmlingua2=True).
+#
+# torch is required by transformers; if you have a CUDA-capable GPU, install
+# the matching torch wheel first and then `pip install -r` this file.
+#
+# Tested on Python 3.10+.
+
+llmlingua>=0.2.2
+transformers>=4.41.0
+torch>=2.1.0
+flask>=3.0.0
+requests>=2.32.0
+python-dotenv>=1.0.0
+tiktoken>=0.7.0

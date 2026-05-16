@@ -8,145 +8,157 @@ export class PromptOptimizer {
         this.updateModel();
     }
 
-    /**
-     * Updates the model from configuration
-     */
     private updateModel(): void {
         const config = vscode.workspace.getConfiguration('cursorTokenOptimizer');
         this.model = (config.get<string>('model') || 'llama3.2').trim();
     }
 
-    /**
-     * Main optimization function using a single meta-prompt approach
-     */
     async optimize(prompt: string): Promise<string> {
-        // Update model in case it changed in settings
         this.updateModel();
-        return await this.optimizePrompt(prompt);
+        return this.optimizePrompt(prompt);
     }
 
-    /**
-     * Optimizes a prompt using a meta-prompt approach with Ollama
-     */
     private async optimizePrompt(userPrompt: string): Promise<string> {
-        // The Meta-Prompt: Instructions for the Model
-        const systemInstruction = `You are an expert Prompt Engineer. Rewrite the user's prompt into a structured format.
+        const systemInstruction = `You are a token-efficient prompt rewriter for software engineering queries.
 
-YOUR OUTPUT MUST START DIRECTLY WITH [CONTEXT] - NO PREFIXES, NO LABELS, NO EXPLANATIONS.
-
-OUTPUT FORMAT (copy this structure exactly):
-
+GOAL: rewrite the user's request into a compact English specification with three blocks, in this exact order:
 [CONTEXT]
-<brief background information>
-
+<one short line of background or environment, or "None.">
 [TASK]
-<detailed step-by-step description. Break down complex tasks into clear, actionable steps. Be specific about requirements, expected behavior, and implementation approach.>
-
+<one or two imperative sentences stating exactly what to do>
 [CONSTRAINTS]
-<any limitations, requirements, or restrictions. If none, write "None.">
+<short bullet list of explicit constraints, or "None.">
 
-[SYSTEM]
-You are an expert software developer. Write clean, maintainable code. Avoid spaghetti code. Break down complex tasks into steps and implement them one by one. Do not make too many changes at once. Focus on one feature or fix at a time.
+RULES:
+1. Translate any non-English text to concise English (English tokenizes cheaper).
+2. Strip pleasantries and filler ("please", "thanks", "could you", "kolay gelsin", etc.).
+3. Preserve every concrete identifier (file paths, function/class names, error messages) verbatim.
+4. Output ONLY the three blocks above. No code, no extra headers, no commentary.
+5. Keep the total output as short as possible.`;
 
-CRITICAL RULES:
-1. Translate non-English prompts to English.
-2. Remove all fluff, politeness, and unnecessary words.
-3. START your output directly with [CONTEXT] - do NOT write "Here is", "Optimized prompt:", "Structured prompt:", or any other labels.
-4. Use EXACTLY "[SYSTEM]" as the section header (all uppercase, brackets included) - never use [YOU ARE AN EXPERT SOFTWARE DEVELOPER] or any other variations.
-5. The [SYSTEM] section content must be: "You are an expert software developer. Write clean, maintainable code. Avoid spaghetti code. Break down complex tasks into steps and implement them one by one. Do not make too many changes at once. Focus on one feature or fix at a time."
-6. Each section header appears exactly once - no duplicates.
-7. Output ONLY the 4 sections above - nothing before, nothing after, no explanations, no labels.`;
+        const modelToUse = this.model.trim();
+        const primaryPrompt = `${systemInstruction}\n\n----- USER MESSAGE -----\n${userPrompt}\n\nRewrite now:`;
 
-        try {
-            // Try the model name as-is first (trimmed to remove any whitespace)
-            let modelToUse = this.model.trim();
-            
-            const response = await fetch(this.apiUrl, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    model: modelToUse,
-                    prompt: `${systemInstruction}\n\nUser prompt to optimize:\n"${userPrompt}"\n\nOutput the structured prompt starting directly with [CONTEXT]. Include all 4 sections: [CONTEXT], [TASK], [CONSTRAINTS], and [SYSTEM].`,
-                    stream: false,
-                    options: {
-                        temperature: 0.2,
-                        num_predict: 1500
-                    }
-                })
-            });
+        let candidate = await this.runModel(modelToUse, primaryPrompt);
+        let validation = this.validateLight(candidate);
 
-            if (!response.ok) {
-                const err = await response.text();
-                let errorMessage = `Ollama API Error: ${response.status} ${response.statusText}`;
-                
-                if (response.status === 404) {
-                    try {
-                        const errorData = JSON.parse(err);
-                        if (errorData.error && errorData.error.includes('not found')) {
-                            // Try with :latest suffix if not already present
-                            const trimmedModel = this.model.trim();
-                            if (!trimmedModel.includes(':')) {
-                                const modelWithLatest = `${trimmedModel}:latest`;
-                                
-                                // Retry with :latest suffix
-                                const retryResponse = await fetch(this.apiUrl, {
-                                    method: "POST",
-                                    headers: {
-                                        "Content-Type": "application/json"
-                                    },
-                                    body: JSON.stringify({
-                                        model: modelWithLatest,
-                                        prompt: `${systemInstruction}\n\nUser prompt to optimize:\n"${userPrompt}"\n\nOutput the structured prompt starting directly with [CONTEXT]. Include all 4 sections: [CONTEXT], [TASK], [CONSTRAINTS], and [SYSTEM].`,
-                                        stream: false,
-                                        options: {
-                                            temperature: 0.2,
-                                            num_predict: 1500
-                                        }
-                                    })
-                                });
-                                
-                                if (retryResponse.ok) {
-                                    const retryResult = await retryResponse.json() as any;
-                                    if (retryResult && retryResult.response) {
-                                        // Return LLM output exactly as-is - no modifications
-                                        return retryResult.response.trim();
-                                    }
-                                }
-                            }
-                            
-                            errorMessage += `\n\nModel "${this.model.trim()}" is not installed in Ollama. ` +
-                                `To install it, run: ollama pull ${this.model.trim()}\n\n` +
-                                `Popular models: llama3.2, mistral, phi3, gemma2:2b`;
-                        } else {
-                            errorMessage += ` - ${err}`;
-                        }
-                    } catch {
-                        errorMessage += ` - ${err}`;
-                    }
-                } else if (response.status === 0 || response.status === 500) {
-                    errorMessage += `\n\nOllama is not running or not accessible at ${this.apiUrl}. ` +
-                        `Please make sure Ollama is installed and running. ` +
-                        `Install from https://ollama.ai`;
-                } else if (err) {
-                    errorMessage += ` - ${err}`;
-                }
-                
-                throw new Error(errorMessage);
-            }
+        for (let attempt = 0; attempt < 2 && !validation.valid; attempt++) {
+            const repairPrompt = `${systemInstruction}
 
-            const result = await response.json() as any;
-            
-            // Parse Ollama response format
-            if (result && result.response) {
-                // Return LLM output exactly as-is - no modifications
-                return result.response.trim();
-            }
-            
-            throw new Error("Invalid response format from Ollama.");
-        } catch (error) {
-            throw error;
+Your previous output was invalid:
+${validation.reasons.map((r, i) => `${i + 1}. ${r}`).join('\n')}
+
+Original user prompt:
+${userPrompt}
+
+Previous output:
+${candidate}
+
+Rewrite now. Output ONLY the three blocks:`;
+            candidate = await this.runModel(modelToUse, repairPrompt);
+            validation = this.validateLight(candidate);
         }
+
+        if (!validation.valid) {
+            return userPrompt;
+        }
+        return this.applyTokenGuard(userPrompt, candidate);
+    }
+
+    private async runModel(model: string, prompt: string): Promise<string> {
+        let response = await this.callOllama(model, prompt);
+
+        if (!response.ok && response.status === 404 && !model.includes(':')) {
+            const retry = await this.callOllama(`${model}:latest`, prompt);
+            if (retry.ok) {
+                response = retry;
+            }
+        }
+
+        if (!response.ok) {
+            const body = await response.text();
+            throw new Error(this.formatOllamaError(response.status, response.statusText, body));
+        }
+
+        const result = await response.json() as { response?: string };
+        if (!result || typeof result.response !== 'string') {
+            throw new Error('Invalid response format from Ollama.');
+        }
+        return this.cleanModelOutput(result.response.trim());
+    }
+
+    private async callOllama(model: string, prompt: string): Promise<Response> {
+        return fetch(this.apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                model,
+                prompt,
+                stream: false,
+                options: {
+                    temperature: 0,
+                    top_p: 0.9,
+                    num_predict: 400,
+                    stop: ['----- USER MESSAGE -----', '```']
+                }
+            })
+        });
+    }
+
+    private formatOllamaError(status: number, statusText: string, body: string): string {
+        let msg = `Ollama API Error: ${status} ${statusText}`;
+        if (status === 404) {
+            try {
+                const data = JSON.parse(body) as { error?: string };
+                if (data.error && data.error.includes('not found')) {
+                    return `${msg}\n\nModel "${this.model}" is not installed in Ollama. ` +
+                        `To install it, run: ollama pull ${this.model}\n\n` +
+                        `Popular models: llama3.2, mistral, phi3, gemma2:2b`;
+                }
+            } catch {
+                // fall through
+            }
+        } else if (status === 0 || status === 500) {
+            msg += `\n\nOllama is not running or not accessible at ${this.apiUrl}. ` +
+                `Please make sure Ollama is installed and running. Install from https://ollama.ai`;
+        }
+        if (body) {
+            msg += ` - ${body}`;
+        }
+        return msg;
+    }
+
+    private cleanModelOutput(text: string): string {
+        let t = text.trim();
+        t = t.replace(/```[\s\S]*?```/g, '').trim();
+        const idx = t.search(/\[CONTEXT\]/i);
+        if (idx > 0) {
+            t = t.slice(idx).trim();
+        }
+        return t;
+    }
+
+    private validateLight(text: string): { valid: boolean; reasons: string[] } {
+        const reasons: string[] = [];
+        if (!/\[CONTEXT\]/i.test(text)) reasons.push('Missing [CONTEXT] block.');
+        if (!/\[TASK\]/i.test(text)) reasons.push('Missing [TASK] block.');
+        if (!/\[CONSTRAINTS\]/i.test(text)) reasons.push('Missing [CONSTRAINTS] block.');
+        if (text.length < 10) reasons.push('Output too short.');
+        return { valid: reasons.length === 0, reasons };
+    }
+
+    private approxTokens(s: string): number {
+        let n = 0;
+        for (const ch of s) n += /[\x00-\x7F]/.test(ch) ? 0.25 : 1;
+        return Math.ceil(n);
+    }
+
+    private applyTokenGuard(rawUserText: string, finalized: string): string {
+        const optimizedTokens = this.approxTokens(finalized);
+        const rawTokens = this.approxTokens(rawUserText);
+        if (optimizedTokens >= rawTokens * 0.95) {
+            return rawUserText;
+        }
+        return finalized;
     }
 }

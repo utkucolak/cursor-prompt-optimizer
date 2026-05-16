@@ -1,0 +1,103 @@
+(.venv) utku@DESKTOP-53KH1S1:~/projects/OckBench$ python main.py \
+rovider>   --provider openai \
+>   --model gpt-4o \
+>   --task coding \
+>   --max-output-tokens 4096 \
+>   --cache cache/baseline.jsonl
+Running gpt-4o on 200 problems:   0%|                                                                                           | 0/200 [00:00<?, ?problem/s]
+Running gpt-4o on 200 problems: 100%|█████████████████████████████████████████████████████████████████████████████████| 200/200 [03:10<00:00,  1.05problem/s]
+
+================================================================================
+EXPERIMENT SUMMARY
+================================================================================
+Dataset: OckBench_coding
+Model: gpt-4o
+Accuracy: 60.00% (120/200)
+Total Tokens: 118,788
+  Prompt: 32,862
+  Answer: 85,926
+  Reasoning: 0
+  Output: 85,926
+Avg Tokens/Problem: 593.9
+OckScore: 59.42
+Duration: 190.92s
+================================================================================
+
+EXPERIMENT SUMMARY
+================================================================================
+Dataset: OckBench_coding
+Model: gpt-4o
+Accuracy: 60.50% (121/200)
+Total Tokens: 125,315
+  Prompt: 62,586
+  Answer: 62,729
+  Reasoning: 0
+  Output: 62,729
+Avg Tokens/Problem: 626.6
+OckScore: 59.89
+Duration: 752.40s
+================================================================================
+
+SLIGHTLY CHAOTIC PROMPTS.
+
+================================================================================
+EXPERIMENT SUMMARY
+================================================================================
+Dataset: OckBench_chaos50_baseline
+Model: gpt-4o
+Accuracy: 58.00% (29/50)
+Total Tokens: 27,399
+  Prompt: 7,765
+  Answer: 19,634
+  Reasoning: 0
+  Output: 19,634
+Avg Tokens/Problem: 548.0
+OckScore: 57.47
+Duration: 102.42s
+================================================================================
+(.venv) utku@DESKTOP-53KH1S1:~/projects/OckBench$ python main.py \
+rovider>   --provider generic \
+>   --model gpt-4o \
+>   --task coding \
+>   --base-url "http://${HOST_IP}:4000/v1" \
+  --data>   --dataset-path /mnt/c/Users/Utku/projects/Cursor-Token-Optimizer/data/OckBench_coding_chaos_50.jsonl \
+>   --dataset-name OckBench_chaos50_proxy \
+>   --evaluator-type code \
+>   --temperature 0 \
+>   --max-output-tokens 4096
+Running gpt-4o on 50 problems: 100%|████████████████████████████████████████████████████████████████████████████████████| 50/50 [03:02<00:00,  3.64s/problem]
+
+================================================================================
+EXPERIMENT SUMMARY
+================================================================================
+Dataset: OckBench_chaos50_proxy
+Model: gpt-4o
+Accuracy: 62.00% (31/50)
+Total Tokens: 28,288
+  Prompt: 15,199
+  Answer: 13,089
+  Reasoning: 0
+  Output: 13,089
+Avg Tokens/Problem: 565.8
+OckScore: 61.45
+Duration: 182.18s
+================================================================================
+
+(.venv) utku@DESKTOP-53KH1S1:~/projects/OckBench$ python main.py   --provider generic   --model gpt-4o   --task coding   --base-url "http://${HOST_IP}:4000/v1"   --dataset-path /mnt/c/Users/Utku/projects/Cursor-Token-Optimizer/data/OckBench_coding_mixed_lang.jsonl   --dataset-name OckBench_mixed_lang_proxy   --evaluator-type code   --temperature 0   --max-output-tokens 4096
+Running gpt-4o on 50 problems: 100%|████████████████████████████████████████████████████████████████████████████████████| 50/50 [01:53<00:00,  2.28s/problem]
+
+================================================================================
+EXPERIMENT SUMMARY
+================================================================================
+Dataset: OckBench_mixed_lang_proxy
+Model: gpt-4o
+Accuracy: 48.00% (24/50)
+Total Tokens: 36,947
+  Prompt: 13,162
+  Answer: 23,785
+  Reasoning: 0
+  Output: 23,785
+Avg Tokens/Problem: 738.9
+OckScore: 47.29
+Duration: 114.00s
+================================================================================
