@@ -3,7 +3,7 @@
   "displayName": "Cursor Token Optimizer",
   "description": "Optimizes prompts to reduce token costs using local LLM models",
   "version": "0.0.1",
-  "publisher": "utkucolak",
+  "publisher": "anonymous",
   "engines": {
     "vscode": "^1.74.0"
   },

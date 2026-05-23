@@ -3,7 +3,11 @@
 \geometry{left=0.75in, right=0.75in, top=1in, bottom=1in, columnsep=0.25in}
 \usepackage{times}
 \usepackage{hyperref}
-\usepackage{authblk}
+\hypersetup{
+  hidelinks,
+  pdfauthor={},
+  pdftitle={Cross-Lingual Token Arbitrage: Optimizing Code Agent Context Windows via Local LLM Preprocessing}
+}
 \usepackage{abstract}
 \usepackage{cite}
 \usepackage{booktabs}
@@ -12,7 +16,7 @@
 \usepackage{amssymb}
 
 \title{\Large\textbf{Cross-Lingual Token Arbitrage: Optimizing Code Agent Context Windows via Local LLM Preprocessing}}
-\author{\normalsize Utku \\ \textit{Software and Artificial Intelligence Engineer} \\ \textit{Istanbul, T\"urkiye}}
+\author{Anonymous}
 \date{}
 
 \begin{document}
@@ -291,7 +295,7 @@ Future work: (i) the remaining two ablation cells (\textit{regex\_strip}, \texti
 
 \paragraph{Backend-specific dollar regression.} The dollar-cost outcome is asymmetric (Section~\ref{sec:results-dollars}): $-12.4\%$ on \texttt{gemini-2.5-flash-lite}, flat on \texttt{gpt-4o}, $+15.1\%$ on \texttt{gpt-3.5-turbo}. Deployment recommendations are conditional on the backend's output/input price ratio.
 
-\paragraph{Translation quality.} OMH-Polyglot's Turkish segments are native-quality. The Modern Standard Arabic and Simplified Chinese segments use conservative technical register and have not yet been audited by native speakers; an audit is scheduled before external release.
+\paragraph{Translation quality.} All non-English segments use conservative technical register. Arabic and Chinese translations have not yet been audited by native speakers; an audit is scheduled before external release.
 
 \paragraph{Schema mismatch between benchmark and IDE.} The benchmark proxy emits a Bi-Block; the IDE extension extends this with a third \texttt{[CONSTRAINTS]} block. Results in this paper reflect the Bi-Block configuration only.
 

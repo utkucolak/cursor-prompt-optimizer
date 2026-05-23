@@ -25,8 +25,7 @@
  *   8. Arabic  + English CS jargon code-switch
  *   9. Chinese + English CS jargon code-switch
  *
- * Quality note: Turkish translations are native-quality (author is a
- * Turkish speaker). Arabic and Chinese translations use conservative
+ * Quality note: Arabic and Chinese translations use conservative
  * Modern-Standard / Simplified registers and standard CS terminology.
  * Before any external benchmark release, the AR/ZH sentences should
  * be checked by native speakers — see the paper's data card.

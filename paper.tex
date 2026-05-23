@@ -3,7 +3,11 @@
 \geometry{left=0.75in, right=0.75in, top=1in, bottom=1in, columnsep=0.25in}
 \usepackage{times} % Standard academic font
 \usepackage{hyperref}
-\usepackage{authblk}
+\hypersetup{
+  hidelinks,
+  pdfauthor={},
+  pdftitle={Cross-Lingual Token Arbitrage: Optimizing Code Agent Context Windows via Local LLM Preprocessing}
+}
 \usepackage{abstract}
 \usepackage{cite}
 \usepackage{booktabs}
@@ -13,7 +17,7 @@
 \usepackage{todonotes}
 
 \title{\Large\textbf{Cross-Lingual Token Arbitrage: Optimizing Code Agent Context Windows via Local LLM Preprocessing}}
-\author{\normalsize Utku \\ \textit{Software and Artificial Intelligence Engineer} \\ \textit{Istanbul, Türkiye}}
+\author{Anonymous}
 \date{}
 
 \begin{document}
@@ -458,7 +462,7 @@ The two pending cells are not required to defend the headline accuracy attributi
 
 \paragraph{Backend-specific dollar regression.} The dollar-cost outcome is asymmetric (Section~\ref{sec:results-dollars}): the middleware saves $-12.4\%$ on \texttt{gemini-2.5-flash-lite}, is flat ($-0.4\%$) on \texttt{gpt-4o}, and increases cost by $+15.1\%$ on \texttt{gpt-3.5-turbo} because that backend prices output tokens at $3\times$ input and the cleaner prompt elicits longer completions. Deployment recommendations are therefore conditional on the backend's output/input price ratio and on prior knowledge of its answer-token behaviour under structured prompts.
 
-\paragraph{Translation quality.} OMH-Polyglot's Turkish segments are native-quality. The Modern Standard Arabic and Simplified Chinese segments use conservative technical register and have not yet been audited by native speakers; an audit pass is scheduled before any external release of the dataset.
+\paragraph{Translation quality.} All non-English segments use conservative technical register. Arabic and Chinese translations have not yet been audited by native speakers; an audit pass is scheduled before any external release of the dataset.
 
 \paragraph{Schema mismatch between benchmark and IDE.} The benchmark proxy emits a Bi-Block (\texttt{[CONTEXT]}, \texttt{[TASK]}); the IDE extension extends this with a third \texttt{[CONSTRAINTS]} block for workspace-level constraints not encoded as test code. The results in Section~\ref{sec:results} reflect the Bi-Block configuration only.
 
