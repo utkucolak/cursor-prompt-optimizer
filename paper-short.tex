@@ -14,6 +14,7 @@
 \usepackage{multirow}
 \usepackage{amsmath}
 \usepackage{amssymb}
+\usepackage{graphicx}
 
 \title{\Large\textbf{Cross-Lingual Token Arbitrage: Optimizing Code Agent Context Windows via Local LLM Preprocessing}}
 \author{Anonymous}
@@ -233,7 +234,7 @@ Two cells of the original five-condition matrix remain pending: \textit{regex\_s
 \label{sec:baselines}
 We address whether a well-tuned post-hoc compressor can recover the same savings. LLMLingua-2 \cite{pan2024llmlingua2} is a token-classification model (\texttt{xlm-roberta-large}, $\sim\!560$\,M parameters) trained to keep or drop tokens at a target rate; the multilingual XLM-RoBERTa backbone is the natural baseline for our multilingual specifications.
 
-\paragraph{Setup.} We use the public checkpoint \texttt{microsoft/llmlingua-2-xlm-roberta-large-meetingbank} through the official \texttt{PromptCompressor} API at \texttt{rate}\,$=0.6$ (a $40\%$ token-reduction target, matched to the prompt-side band achieved by \textit{Ours}), with the recommended \texttt{force\_tokens} for punctuation. Because LLMLingua-2 is task-agnostic, we detach the \texttt{assert} block before compression and concatenate it back verbatim afterward; without this guard the grader would be silently corrupted. The hosting Python proxy is byte-compatible with the OpenAI-style proxy used for \textit{Ours}: identical system prompt, identical \texttt{<solution>} post-processing, identical $5\%$ token-budget guard.
+\paragraph{Setup.} We use the public MeetingBank LLMLingua-2 checkpoint\footnote{\url{https://huggingface.co/microsoft/llmlingua-2-xlm-roberta-large-meetingbank}} through the official \texttt{PromptCompressor} API at compression \texttt{rate}\,$=0.6$ (a $40\%$ token-reduction target, matched to the prompt-side band achieved by \textit{Ours}), with the recommended \texttt{force\_tokens} for punctuation. Because LLMLingua-2 is task-agnostic, we detach the \texttt{assert} block before compression and concatenate it back verbatim afterward; without this guard the grader would be silently corrupted. The hosting Python proxy is byte-compatible with the OpenAI-style proxy used for \textit{Ours}: identical system prompt, identical \texttt{<solution>} post-processing, and an identical $5\%$ token-budget guard.
 
 \paragraph{Headline contrast.} Across all three backends \textit{Ours} strictly Pareto-dominates LLMLingua-2 on OckScore: $99.08 > 76.91$ on \texttt{gpt-3.5-turbo}, $98.88 > 96.56$ on \texttt{gpt-4o}, and $97.54 > 33.85$ on \texttt{gemini-2.5-flash-lite}. LLMLingua-2 hits its configured rate (within-tokenizer prompt reductions of $15$--$21\%$ vs.\ Raw), but the cross-lingual rewrite compresses harder ($34$--$47\%$) and preserves accuracy where LLMLingua-2 does not.
 
@@ -253,20 +254,24 @@ Per-prompt local-rewrite latency, $(\bar{t}_{\text{Ours}}-\bar{t}_{\text{Raw}})/
 \label{sec:results-dollars}
 Commercial APIs price output tokens at $3$--$4\times$ the input rate, so the same $-8\%$ change in total tokens can translate into very different dollar outcomes. Table~\ref{tab:dollar-cost} reports cost per $200$-task run using listed prices as of May 2026\footnote{\$0.50/\$1.50 per million input/output tokens for \texttt{gpt-3.5-turbo}; \$2.50/\$10.00 for \texttt{gpt-4o}; \$0.10/\$0.40 for \texttt{gemini-2.5-flash-lite}.}.
 
-\begin{table}[h]
+\begin{table}[t]
 \centering
-\small
-\setlength{\tabcolsep}{3pt}
-\begin{tabular}{lcccrr}
+\footnotesize
+\setlength{\tabcolsep}{2pt}
+\resizebox{\columnwidth}{!}{%
+\begin{tabular}{@{}lccccc@{}}
 \toprule
-\textbf{Cloud Agent} & \textbf{Raw} & \textbf{LL2} & \textbf{Ours} & \textbf{$\Delta\$$ LL2} & \textbf{$\Delta\$$ Ours} \\
+\textbf{Agent} & \textbf{Raw} & \textbf{LL2} & \textbf{Ours} & \multicolumn{2}{c}{\textbf{$\Delta$ vs.\ Raw}} \\
+\cmidrule(lr){5-6}
+ &  &  &  & \textbf{LL2} & \textbf{Ours} \\
 \midrule
-\texttt{gpt-3.5-turbo}        & \$0.0878 & \$0.0852 & \$0.1011 & $-2.9\%$  & $+15.1\%$ \\
-\texttt{gpt-4o}               & \$1.0641 & \$0.9683 & \$1.0601 & $-9.0\%$  & $-0.4\%$ \\
-\texttt{gemini-2.5-flash-lite}& \$0.0332 & \$0.0859 & \$0.0291 & $+158.7\%$ & $-12.4\%$ \\
+\texttt{gpt-3.5} & \$0.0878 & \$0.0852 & \$0.1011 & $-2.9\%$  & $+15.1\%$ \\
+\texttt{gpt-4o}  & \$1.0641 & \$0.9683 & \$1.0601 & $-9.0\%$  & $-0.4\%$ \\
+\texttt{gemini-lite} & \$0.0332 & \$0.0859 & \$0.0291 & $+158.7\%$ & $-12.4\%$ \\
 \bottomrule
-\end{tabular}
-\caption{Per-200-task cloud-API cost in USD; $\Delta\$$ relative to Raw. Local-compute cost (Llama 3.2 3B at $\sim$$100$\,W for $\sim$$176$\,ms/query) is $\sim$\$0.07 per $100{,}000$ queries and omitted.}
+\end{tabular}%
+}
+\caption{Per-200-task cloud-API cost in USD; $\Delta$ columns are percent change vs.\ Raw. \texttt{gpt-3.5} and \texttt{gemini-lite} abbreviate \texttt{gpt-3.5-turbo} and \texttt{gemini-2.5-flash-lite}. Local-compute cost (Llama 3.2 3B at $\sim$$100$\,W for $\sim$$176$\,ms/query) is $\sim$\$0.07 per $100{,}000$ queries and omitted.}
 \label{tab:dollar-cost}
 \end{table}
 
